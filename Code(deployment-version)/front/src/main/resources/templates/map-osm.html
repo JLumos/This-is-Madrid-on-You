@@ -1,0 +1,1234 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+<meta charset="utf-8"></meta>
+<meta http-equiv="X-UA-Compatible" content="IE=edge"></meta>
+<!-- Tell the browser to be responsive to screen width -->
+<meta name="viewport" content="width=device-width, initial-scale=1"></meta>
+<meta name="description" content=""></meta>
+<meta name="author" content=""></meta>
+<!-- Favicon icon -->
+<link rel="icon" type="image/png" sizes="16x16" href="../../img/favicon.png"></link>
+<title>Madrid on You</title>
+<!-- Bootstrap Core CSS -->
+<link href="../../plugins/bootstrap/css/bootstrap.min.css" rel="stylesheet"></link>
+<!-- Custom CSS -->
+<link href="../../css/style.css" rel="stylesheet"></link>
+<link rel="stylesheet" href="../../lib/leaflet/leaflet.css"></link>
+
+<!-- page css -->
+<link href="../../css/pages/google-vector-map.css" rel="stylesheet"></link>
+<!-- You can change the theme colors from here -->
+<link href="../../css/colors/default-dark.css" id="theme" rel="stylesheet"></link>
+<!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+<!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+<!--[if lt IE 9]>
+    <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+    <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+<![endif]-->
+
+<script src="../../jquery/jquery-1.10.2.js" type="text/javascript"></script>
+<script src="../../bootstrap3/js/bootstrap.js" type="text/javascript"></script>
+<script src="../../js/login-register.js" type="text/javascript"></script>
+<script src="../../lib/leaflet/leaflet.js"></script>
+
+<script src='https://api.mapbox.com/mapbox-gl-js/v0.42.0/mapbox-gl.js'></script>
+<link href='https://api.mapbox.com/mapbox-gl-js/v0.42.0/mapbox-gl.css'
+	rel='stylesheet'></link>
+
+
+<style type="text/css">
+#map {
+	height: 500px;
+}
+
+.leaflet-control-attribution {
+	display: none;
+}
+</style>
+
+</head>
+
+<body class="fix-header card-no-border fix-sidebar" onload="initmap()">
+	<div class="preloader">
+		<div class="loader">
+			<div class="loader__figure"></div>
+			<p class="loader__label">Cargando...</p>
+		</div>
+	</div>
+
+	<div id="main-wrapper">
+
+		<header class="topbar">
+			<nav class="navbar top-navbar navbar-expand-md navbar-light">
+
+				<div class="navbar-header">
+					<a class="navbar-brand" th:href="@{'/users/'+${activeUsername}+'/home'}"> <!-- Logo icon --> <b>
+							<img src="../../img/logo-icon.png" alt="homepage" class="dark-logo"></img>
+					</b> <span> <img src="../../img/logo-text.png" alt="homepage"
+							class="dark-logo"></img>
+					</span>
+					</a>
+				</div>
+				<div class="navbar-collapse">
+
+					<ul class="navbar-nav mr-auto">
+						<li class="nav-item"><a
+							class="nav-link nav-toggler hidden-md-up waves-effect waves-dark"
+							href="javascript:void(0)"><i class="ti-menu"></i></a></li>
+					</ul>
+					<ul class="navbar-nav my-lg-0">
+						<li class="nav-item"><a
+							class="nav-link waves-effect waves-dark" th:href="@{'/users/'+${activeUsername}+'/profile'}"><img
+								src="../../img/icons/userIcon.png" alt="user"
+								class="profile-pic" /></a></li>
+					</ul>
+
+				</div>
+			</nav>
+		</header>
+		<aside class="left-sidebar">
+			<div class="scroll-sidebar">
+				<!-- Sidebar navigation-->
+				<nav class="sidebar-nav">
+					<ul id="sidebarnav">
+						<li><a class="waves-effect waves-dark" th:href="@{'/users/'+${activeUsername}+'/home'}"
+							aria-expanded="false"><i class="mdi mdi-gauge"></i><span
+								class="hide-menu">Actividad Reciente</span></a></li>
+						<li><a class="waves-effect waves-dark" th:href="@{'/users/'+${activeUsername}+'/profile'}"
+							aria-expanded="false"><i class="mdi mdi-account-check"></i><span
+								class="hide-menu">Perfil</span></a></li>
+						<li><a class="waves-effect waves-dark" th:href="@{'/users/'+${activeUsername}+'/routeDefinition'}"
+							aria-expanded="false"><i class="mdi mdi-routes"></i><span
+								class="hide-menu">Generador de rutas</span></a></li>
+						<li><a class="waves-effect waves-dark" th:href="@{'/users/'+${activeUsername}+'/mapStandalone'}"
+							aria-expanded="false"><i class="mdi mdi-earth"></i><span
+								class="hide-menu">Mapa</span></a></li>
+						<li><a class="waves-effect waves-dark" href="../../01Manual_WEB" target="_blank"
+							aria-expanded="false"><i class="mdi mdi-help-circle"></i><span
+								class="hide-menu">Ayuda</span></a></li>
+						<li><a class="waves-effect waves-dark" href="/"
+							aria-expanded="false"><i class="mdi mdi-close-circle"></i><span
+								class="hide-menu">Salir</span></a></li>
+					</ul>
+				</nav>
+				<!-- End Sidebar navigation -->
+			</div>
+		</aside>
+		<div class="page-wrapper">
+			<div class="container-fluid">
+
+				<div class="row page-titles">
+					<div class="col-md-5 align-self-center">
+						<h3 class="text-themecolor">Esta es tu ruta</h3>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-12">
+						<div class="card">
+							<div class="card-body">
+								<h4 class="card-title">Mapa</h4>
+								<div id="map"></div>
+								<div style="margin-top: 30px;"></div>
+							</div>
+						</div>
+						<th:block th:each="monument : ${monuments}">
+
+							<div class="card">
+								<h3 class="card-title m-b-5" th:text="${monument.name}">
+									<span class="lstick"></span>
+								</h3>
+								<div class="card-body">
+									<div class="row" style="margin-bottom: 15px">
+										<div class="col-md-6">
+											<b>Dirección:</b> <span th:text="${monument.address}"></span>
+											<br></br> <b>Distrito:</b> <span
+												th:text="${monument.district}"></span> <br></br> <b>Teléfono:</b>
+											<span th:text="${monument.phoneNumber}"></span> <br></br> <b>Descripción:</b>
+											<span th:text="${monument.abstrac}"></span> <br></br> <b>Información
+												adicional:</b> <span th:text="${monument.comment}"></span> <br></br>
+											<a th:href="${monument.homepage}">Página web</a>
+										</div>
+										<div class="col-md-6">
+											<img th:src="${monument.image}" alt="Imagen"
+												style="width: inherit; height: inherit;"></img>
+										</div>
+									</div>
+
+									<div class="row">
+										<div class="col-md-4">
+											<table>
+												<tr>
+													<td>
+														<button type="button" class="btn btn-danger btn-sm"
+															th:onclick="'jquery:showHide(\'ff' + ${monument.latitude} + '\');'">Comida
+															rapida</button>
+														<button type="button" class="btn btn-danger btn-sm"
+															th:onclick="'jquery:showHide(\'rs' + ${monument.latitude} + '\');'">Restaurantes</button>
+													</td>
+												</tr>
+											</table>
+										</div>
+										<div class="col-md-4">
+											<table>
+												<tr>
+													<td>
+														<button type="button" class="btn btn-danger btn-sm"
+															th:onclick="'jquery:showHide(\'pub' + ${monument.latitude} + '\');'">Pubs</button>
+														<button type="button" class="btn btn-danger btn-sm"
+															th:onclick="'jquery:showHide(\'coffe' + ${monument.latitude} + '\');'">Cafeterias</button>
+														<button type="button" class="btn btn-danger btn-sm"
+															th:onclick="'jquery:showHide(\'bar' + ${monument.latitude} + '\');'">Bares</button>
+													</td>
+												</tr>
+											</table>
+										</div>
+										<div class="col-md-4">
+											<table>
+												<tr>
+													<td>
+														<button type="button" class="btn btn-danger btn-sm"
+															th:onclick="'jquery:showHide(\'cine' + ${monument.latitude} + '\');'">Cines</button>
+														<button type="button" class="btn btn-danger btn-sm"
+															th:onclick="'jquery:showHide(\'th' + ${monument.latitude} + '\');'">Teatros</button>
+													</td>
+												</tr>
+											</table>
+										</div>
+									</div>
+									<div class="row" style="margin-bottom:10px">
+										<div class="col-md-4">
+											<table>
+												<tr>
+													<td>
+														<button type="button" class="btn btn-danger btn-sm"
+															th:onclick="'jquery:showHide(\'ph' + ${monument.latitude} + '\');'">Farmacias</button>
+														<button type="button" class="btn btn-danger btn-sm"
+															th:onclick="'jquery:showHide(\'bank' + ${monument.latitude} + '\');'">Cajeros</button>
+													</td>
+												</tr>
+											</table>
+										</div>
+										<div class="col-md-4">
+											<table>
+												<tr>
+													<td>
+														<button type="button" class="btn btn-danger btn-sm"
+															th:onclick="'jquery:showHide(\'bi' + ${monument.latitude} + '\');'">Aparca-bicis</button>
+														<button type="button" class="btn btn-danger btn-sm"
+															th:onclick="'jquery:showHide(\'park' + ${monument.latitude} + '\');'">Parkings</button>
+													</td>
+												</tr>
+											</table>
+										</div>
+										<div class="col-md-4">
+											<table>
+												<tr>
+													<td>
+														<button type="button" class="btn btn-danger btn-sm"
+															th:onclick="'jquery:showHide(\'taxi' + ${monument.latitude} + '\');'">Paradas
+															de Taxi</button>
+														<button type="button" class="btn btn-danger btn-sm"
+															th:onclick="'jquery:showHide(\'bus' + ${monument.latitude} + '\');'">Paradas
+															de bus</button>
+													</td>
+												</tr>
+											</table>
+
+										</div>
+									</div>
+
+
+									<div th:id="'ff'+${monument.latitude}" style="display: none">
+										<div
+											th:each="ffChunk : ${T(com.madridonyou.micro.front.utils.FrontUtils).partition(monument.fastFoodAround, 2)}"
+											class="row-fluid">
+											<div class="row">
+												<div th:each="element : ${ffChunk}"
+													class="col-lg-4 col-xlg-3">
+													<div class="card">
+														<div class="card-body">
+															<h3 th:text="${element.tags.name}"></h3>
+															<span class="label label-info label-rounded"
+																th:text="${element.verboseDistance}"></span>
+															<table>
+																<tr>
+																	<td th:text="${element.ubicacion}"></td>
+																</tr>
+																<tr>
+																	<td th:text="${element.tlf}"></td>
+																</tr>
+																<tr>
+																	<td th:text="${element.web}"></td>
+																</tr>
+																<tr>
+																	<td th:text="${element.facebook}"></td>
+																</tr>
+																<tr>
+																	<td th:text="${element.horario}"></td>
+																</tr>
+																<tr>
+																	<td th:text="${element.descripcion}"></td>
+																</tr>
+																<tr>
+																	<td th:text="${element.capacidad}"></td>
+																</tr>
+																<tr>
+																	<td th:text="${element.cocina}"></td>
+																</tr>
+															</table>
+
+															<div class="d-flex m-t-20">
+																<button class="btn p-l-0 btn-link">Saber más</button>
+															</div>
+														</div>
+													</div>
+												</div>
+											</div>
+										</div>
+									</div>
+
+
+									<div th:id="'rs'+${monument.latitude}" style="display: none">
+										<div
+											th:each="restaChunk : ${T(com.madridonyou.micro.front.utils.FrontUtils).partition(monument.restaurantAround, 2)}"
+											class="row-fluid">
+											<div class="row">
+												<div th:each="element : ${restaChunk}"
+													class="col-lg-4 col-xlg-3">
+													<div class="card">
+														<div class="card-body">
+															<h3 th:text="${element.tags.name}"></h3>
+															<span class="label label-info label-rounded"
+																th:text="${element.verboseDistance}"></span>
+															<table>
+																<tr>
+																	<td th:text="${element.ubicacion}"></td>
+																</tr>
+																<tr>
+																	<td th:text="${element.tlf}"></td>
+																</tr>
+																<tr>
+																	<td th:text="${element.web}"></td>
+																</tr>
+																<tr>
+																	<td th:text="${element.facebook}"></td>
+																</tr>
+																<tr>
+																	<td th:text="${element.horario}"></td>
+																</tr>
+																<tr>
+																	<td th:text="${element.descripcion}"></td>
+																</tr>
+																<tr>
+																	<td th:text="${element.capacidad}"></td>
+																</tr>
+																<tr>
+																	<td th:text="${element.cocina}"></td>
+																</tr>
+															</table>
+
+															<div class="d-flex m-t-20">
+																<button class="btn p-l-0 btn-link">Saber más</button>
+															</div>
+														</div>
+													</div>
+												</div>
+											</div>
+										</div>
+									</div>
+
+									<div th:id="'pub'+${monument.latitude}" style="display: none">
+										<div
+											th:each="pubChunk : ${T(com.madridonyou.micro.front.utils.FrontUtils).partition(monument.pubAround, 2)}"
+											class="row-fluid">
+											<div class="row">
+												<div th:each="element : ${pubChunk}"
+													class="col-lg-4 col-xlg-3">
+													<div class="card">
+														<div class="card-body">
+															<h3 th:text="${element.tags.name}"></h3>
+															<span class="label label-info label-rounded"
+																th:text="${element.verboseDistance}"></span>
+															<table>
+																<tr>
+																	<td th:text="${element.ubicacion}"></td>
+																</tr>
+																<tr>
+																	<td th:text="${element.tlf}"></td>
+																</tr>
+																<tr>
+																	<td th:text="${element.web}"></td>
+																</tr>
+																<tr>
+																	<td th:text="${element.facebook}"></td>
+																</tr>
+																<tr>
+																	<td th:text="${element.horario}"></td>
+																</tr>
+																<tr>
+																	<td th:text="${element.descripcion}"></td>
+																</tr>
+																<tr>
+																	<td th:text="${element.capacidad}"></td>
+																</tr>
+																<tr>
+																	<td th:text="${element.cocina}"></td>
+																</tr>
+															</table>
+
+															<div class="d-flex m-t-20">
+																<button class="btn p-l-0 btn-link">Saber más</button>
+															</div>
+														</div>
+													</div>
+												</div>
+											</div>
+										</div>
+									</div>
+
+									<div th:id="'coffe'+${monument.latitude}" style="display: none">
+										<div
+											th:each="cafeChunk : ${T(com.madridonyou.micro.front.utils.FrontUtils).partition(monument.cafeAround, 2)}"
+											class="row-fluid">
+											<div class="row">
+												<div th:each="element : ${cafeChunk}"
+													class="col-lg-4 col-xlg-3">
+													<div class="card">
+														<div class="card-body">
+															<h3 th:text="${element.tags.name}"></h3>
+															<span class="label label-info label-rounded"
+																th:text="${element.verboseDistance}"></span>
+															<table>
+																<tr>
+																	<td th:text="${element.ubicacion}"></td>
+																</tr>
+																<tr>
+																	<td th:text="${element.tlf}"></td>
+																</tr>
+																<tr>
+																	<td th:text="${element.web}"></td>
+																</tr>
+																<tr>
+																	<td th:text="${element.facebook}"></td>
+																</tr>
+																<tr>
+																	<td th:text="${element.horario}"></td>
+																</tr>
+																<tr>
+																	<td th:text="${element.descripcion}"></td>
+																</tr>
+																<tr>
+																	<td th:text="${element.capacidad}"></td>
+																</tr>
+																<tr>
+																	<td th:text="${element.cocina}"></td>
+																</tr>
+															</table>
+
+															<div class="d-flex m-t-20">
+																<button class="btn p-l-0 btn-link">Saber más</button>
+															</div>
+														</div>
+													</div>
+												</div>
+											</div>
+										</div>
+									</div>
+
+									<div th:id="'cine'+${monument.latitude}" style="display: none">
+										<div
+											th:each="cineChunk : ${T(com.madridonyou.micro.front.utils.FrontUtils).partition(monument.cinemaAround, 2)}"
+											class="row-fluid">
+											<div class="row">
+												<div th:each="element : ${cineChunk}"
+													class="col-lg-4 col-xlg-3">
+													<div class="card">
+														<div class="card-body">
+															<h3 th:text="${element.tags.name}"></h3>
+															<span class="label label-info label-rounded"
+																th:text="${element.verboseDistance}"></span>
+															<table>
+																<tr>
+																	<td th:text="${element.ubicacion}"></td>
+																</tr>
+																<tr>
+																	<td th:text="${element.tlf}"></td>
+																</tr>
+																<tr>
+																	<td th:text="${element.web}"></td>
+																</tr>
+																<tr>
+																	<td th:text="${element.facebook}"></td>
+																</tr>
+																<tr>
+																	<td th:text="${element.horario}"></td>
+																</tr>
+																<tr>
+																	<td th:text="${element.descripcion}"></td>
+																</tr>
+																<tr>
+																	<td th:text="${element.capacidad}"></td>
+																</tr>
+																<tr>
+																	<td th:text="${element.cocina}"></td>
+																</tr>
+															</table>
+
+															<div class="d-flex m-t-20">
+																<button class="btn p-l-0 btn-link">Saber más</button>
+															</div>
+														</div>
+													</div>
+												</div>
+											</div>
+										</div>
+									</div>
+
+									<div th:id="'th'+${monument.latitude}" style="display: none">
+										<div
+											th:each="thChunk : ${T(com.madridonyou.micro.front.utils.FrontUtils).partition(monument.theatreAround, 2)}"
+											class="row-fluid">
+											<div class="row">
+												<div th:each="element : ${thChunk}"
+													class="col-lg-4 col-xlg-3">
+													<div class="card">
+														<div class="card-body">
+															<h3 th:text="${element.tags.name}"></h3>
+															<span class="label label-info label-rounded"
+																th:text="${element.verboseDistance}"></span>
+															<table>
+																<tr>
+																	<td th:text="${element.ubicacion}"></td>
+																</tr>
+																<tr>
+																	<td th:text="${element.tlf}"></td>
+																</tr>
+																<tr>
+																	<td th:text="${element.web}"></td>
+																</tr>
+																<tr>
+																	<td th:text="${element.facebook}"></td>
+																</tr>
+																<tr>
+																	<td th:text="${element.horario}"></td>
+																</tr>
+																<tr>
+																	<td th:text="${element.descripcion}"></td>
+																</tr>
+																<tr>
+																	<td th:text="${element.capacidad}"></td>
+																</tr>
+																<tr>
+																	<td th:text="${element.cocina}"></td>
+																</tr>
+															</table>
+
+															<div class="d-flex m-t-20">
+																<button class="btn p-l-0 btn-link">Saber más</button>
+															</div>
+														</div>
+													</div>
+												</div>
+											</div>
+										</div>
+									</div>
+
+									<div th:id="'bar'+${monument.latitude}" style="display: none">
+										<div
+											th:each="barChunk : ${T(com.madridonyou.micro.front.utils.FrontUtils).partition(monument.barAround, 2)}"
+											class="row-fluid">
+											<div class="row">
+												<div th:each="element : ${barChunk}"
+													class="col-lg-4 col-xlg-3">
+													<div class="card">
+														<div class="card-body">
+															<h3 th:text="${element.tags.name}"></h3>
+															<span class="label label-info label-rounded"
+																th:text="${element.verboseDistance}"></span>
+															<table>
+																<tr>
+																	<td th:text="${element.ubicacion}"></td>
+																</tr>
+																<tr>
+																	<td th:text="${element.tlf}"></td>
+																</tr>
+																<tr>
+																	<td th:text="${element.web}"></td>
+																</tr>
+																<tr>
+																	<td th:text="${element.facebook}"></td>
+																</tr>
+																<tr>
+																	<td th:text="${element.horario}"></td>
+																</tr>
+																<tr>
+																	<td th:text="${element.descripcion}"></td>
+																</tr>
+																<tr>
+																	<td th:text="${element.capacidad}"></td>
+																</tr>
+																<tr>
+																	<td th:text="${element.cocina}"></td>
+																</tr>
+															</table>
+
+															<div class="d-flex m-t-20">
+																<button class="btn p-l-0 btn-link">Saber más</button>
+															</div>
+														</div>
+													</div>
+												</div>
+											</div>
+										</div>
+									</div>
+
+									<div th:id="'ph'+${monument.latitude}" style="display: none">
+										<div
+											th:each="pharmaChunk : ${T(com.madridonyou.micro.front.utils.FrontUtils).partition(monument.pharmacyAround, 2)}"
+											class="row-fluid">
+											<div class="row">
+												<div th:each="element : ${pharmaChunk}"
+													class="col-lg-4 col-xlg-3">
+													<div class="card">
+														<div class="card-body">
+															<h3 th:text="${element.tags.name}"></h3>
+															<span class="label label-info label-rounded"
+																th:text="${element.verboseDistance}"></span>
+															<p class="m-b-0 m-t-20" th:text="${element.descripcion}"></p>
+															<div class="d-flex m-t-20">
+																<button class="btn p-l-0 btn-link">Saber más</button>
+															</div>
+														</div>
+													</div>
+												</div>
+											</div>
+										</div>
+									</div>
+
+									<div th:id="'bank'+${monument.latitude}" style="display: none">
+										<div
+											th:each="bankChunk : ${T(com.madridonyou.micro.front.utils.FrontUtils).partition(monument.bankAround, 2)}"
+											class="row-fluid">
+											<div class="row">
+												<div th:each="element : ${bankChunk}"
+													class="col-lg-4 col-xlg-3">
+													<div class="card">
+														<div class="card-body">
+															<h3 th:text="${element.tags.name}"></h3>
+															<span class="label label-info label-rounded"
+																th:text="${element.verboseDistance}"></span>
+															<table>
+																<tr>
+																	<td th:text="${element.ubicacion}"></td>
+																</tr>
+																<tr>
+																	<td th:text="${element.tlf}"></td>
+																</tr>
+																<tr>
+																	<td th:text="${element.web}"></td>
+																</tr>
+																<tr>
+																	<td th:text="${element.facebook}"></td>
+																</tr>
+																<tr>
+																	<td th:text="${element.horario}"></td>
+																</tr>
+																<tr>
+																	<td th:text="${element.descripcion}"></td>
+																</tr>
+																<tr>
+																	<td th:text="${element.capacidad}"></td>
+																</tr>
+																<tr>
+																	<td th:text="${element.cocina}"></td>
+																</tr>
+															</table>
+
+															<div class="d-flex m-t-20">
+																<button class="btn p-l-0 btn-link">Saber más</button>
+															</div>
+														</div>
+													</div>
+												</div>
+											</div>
+										</div>
+									</div>
+
+									<div th:id="'bi'+${monument.latitude}" style="display: none">
+										<div
+											th:each="biciChunk : ${T(com.madridonyou.micro.front.utils.FrontUtils).partition(monument.bicycleParkingAround, 2)}"
+											class="row-fluid">
+											<div class="row">
+												<div th:each="element : ${biciChunk}"
+													class="col-lg-4 col-xlg-3">
+													<div class="card">
+														<img class="card-img-top img-responsive"
+															th:src="@{${element.tags.image}}" alt="Card image cap"></img>
+														<div class="card-body">
+															<h3 th:text="${element.tags.name}"></h3>
+															<span class="label label-info label-rounded"
+																th:text="${element.verboseDistance}"></span>
+															<table>
+																<tr>
+																	<td th:text="${element.ubicacion}"></td>
+																</tr>
+																<tr>
+																	<td th:text="${element.tlf}"></td>
+																</tr>
+																<tr>
+																	<td th:text="${element.web}"></td>
+																</tr>
+																<tr>
+																	<td th:text="${element.facebook}"></td>
+																</tr>
+																<tr>
+																	<td th:text="${element.horario}"></td>
+																</tr>
+																<tr>
+																	<td th:text="${element.descripcion}"></td>
+																</tr>
+																<tr>
+																	<td th:text="${element.capacidad}"></td>
+																</tr>
+																<tr>
+																	<td th:text="${element.cocina}"></td>
+																</tr>
+															</table>
+
+															<div class="d-flex m-t-20">
+																<button class="btn p-l-0 btn-link">Saber más</button>
+															</div>
+														</div>
+													</div>
+												</div>
+											</div>
+										</div>
+									</div>
+
+									<div th:id="'taxi'+${monument.latitude}" style="display: none">
+										<div
+											th:each="taxiChunk : ${T(com.madridonyou.micro.front.utils.FrontUtils).partition(monument.taxiAround, 2)}"
+											class="row-fluid">
+											<div class="row">
+												<div th:each="element : ${taxiChunk}"
+													class="col-lg-4 col-xlg-3">
+													<div class="card">
+														<div class="card-body">
+															<h3 th:text="${element.ubicacion}"></h3>
+															<span class="label label-info label-rounded"
+																th:text="${element.verboseDistance}"></span>
+															<table>
+																<tr>
+																	<td th:text="${element.tlf}"></td>
+																</tr>
+																<tr>
+																	<td th:text="${element.web}"></td>
+																</tr>
+																<tr>
+																	<td th:text="${element.facebook}"></td>
+																</tr>
+																<tr>
+																	<td th:text="${element.horario}"></td>
+																</tr>
+																<tr>
+																	<td th:text="${element.descripcion}"></td>
+																</tr>
+																<tr>
+																	<td th:text="${element.capacidad}"></td>
+																</tr>
+																<tr>
+																	<td th:text="${element.cocina}"></td>
+																</tr>
+															</table>
+
+															<div class="d-flex m-t-20">
+																<button class="btn p-l-0 btn-link">Saber más</button>
+															</div>
+														</div>
+													</div>
+												</div>
+											</div>
+										</div>
+									</div>
+
+									<div th:id="'park'+${monument.latitude}" style="display: none">
+										<div
+											th:each="parkChunk : ${T(com.madridonyou.micro.front.utils.FrontUtils).partition(monument.parkingAround, 2)}"
+											class="row-fluid">
+											<div class="row">
+												<div th:each="element : ${parkChunk}"
+													class="col-lg-4 col-xlg-3">
+													<div class="card">
+														<div class="card-body">
+															<h3 th:text="${element.tags.name}"></h3>
+															<span class="label label-info label-rounded"
+																th:text="${element.verboseDistance}"></span>
+															<table>
+																<tr>
+																	<td th:text="${element.ubicacion}"></td>
+																</tr>
+																<tr>
+																	<td th:text="${element.tlf}"></td>
+																</tr>
+																<tr>
+																	<td th:text="${element.web}"></td>
+																</tr>
+																<tr>
+																	<td th:text="${element.facebook}"></td>
+																</tr>
+																<tr>
+																	<td th:text="${element.horario}"></td>
+																</tr>
+																<tr>
+																	<td th:text="${element.descripcion}"></td>
+																</tr>
+																<tr>
+																	<td th:text="${element.capacidad}"></td>
+																</tr>
+																<tr>
+																	<td th:text="${element.cocina}"></td>
+																</tr>
+															</table>
+
+															<div class="d-flex m-t-20">
+																<button class="btn p-l-0 btn-link">Saber más</button>
+															</div>
+														</div>
+													</div>
+												</div>
+											</div>
+										</div>
+									</div>
+
+									<div th:id="'bus'+${monument.latitude}" style="display: none">
+										<div
+											th:each="busChunk : ${T(com.madridonyou.micro.front.utils.FrontUtils).partition(monument.busStopAround, 2)}"
+											class="row-fluid">
+											<div class="row">
+												<div th:each="element : ${busChunk}"
+													class="col-lg-4 col-xlg-3">
+													<div class="card">
+														<div class="card-body">
+															<h3 th:text="${element.tags.name}"></h3>
+															<span class="label label-info label-rounded"
+																th:text="${element.verboseDistance}"></span>
+															<table>
+																<tr>
+																	<td th:text="${element.representation}"></td>
+																</tr>
+															</table>
+
+															<div class="d-flex m-t-20">
+																<button class="btn p-l-0 btn-link">Saber más</button>
+															</div>
+														</div>
+													</div>
+												</div>
+											</div>
+										</div>
+									</div>
+
+
+									<hr></hr>
+
+								</div>
+							</div>
+						</th:block>
+
+					</div>
+				</div>
+			</div>
+			<footer class="footer"> © 2018 Madrid on You </footer>
+		</div>
+	</div>
+	<script src="../../plugins/jquery/jquery.min.js"></script>
+
+	<!-- Bootstrap tether Core JavaScript -->
+	<script src="../../plugins/bootstrap/js/popper.min.js"></script>
+	<script src="../../plugins/bootstrap/js/bootstrap.min.js"></script>
+	<!-- slimscrollbar scrollbar JavaScript -->
+	<script src="../../js/perfect-scrollbar.jquery.min.js"></script>
+	<!--Wave Effects -->
+	<script src="../../js/waves.js"></script>
+	<!--Menu sidebar -->
+	<script src="../../js/sidebarmenu.js"></script>
+	<!--Custom JavaScript -->
+	<script src="../../js/custom.min.js"></script>
+
+	<script th:inline="javascript"> 
+	var map;
+	var ajaxRequest;
+	var plotlist;
+	var plotlayers=[];
+	var json = /*[[${json}]]*/;
+	obj = JSON.parse(json);
+
+	function onMapClick(e) {
+		popup
+		.setLatLng(e.latlng)
+		.setContent("You clicked the map at " + e.latlng.toString())
+		.openOn(map);
+		return;
+	}
+
+	function initmap() {
+		
+		ajaxRequest=getXmlHttpObject();
+		if (ajaxRequest==null) {
+			alert ("This browser does not support HTTP Request");
+			return;
+		}
+		var osmUrl='http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+		var osmAttrib='Map data � <a href="http://openstreetmap.org">OpenStreetMap</a> contributors';
+		var osm = new L.TileLayer(osmUrl, {minZoom: 1, maxZoom: 30, attribution: osmAttrib});		
+		askForPlots();
+		return;
+	}
+
+
+	var popup = L.popup();
+
+	function getXmlHttpObject() {
+		if (window.XMLHttpRequest) { return new XMLHttpRequest(); }
+		if (window.ActiveXObject)  { return new ActiveXObject("Microsoft.XMLHTTP"); }
+		return null;
+	}
+
+	function askForPlots() {
+		var i = 0;
+		var j = 0;
+		var k = 0;
+		
+		var latlongs = Array();
+		
+		var monuments = L.layerGroup();
+		var ff = L.layerGroup();
+		var restaurantes = L.layerGroup();
+		var pubs = L.layerGroup();
+		var cafes = L.layerGroup();
+		var cines = L.layerGroup();
+		var teatros = L.layerGroup();
+		var bares = L.layerGroup();
+		var farmacias = L.layerGroup();
+		var cajeros = L.layerGroup();
+		var bicis = L.layerGroup();
+		var taxi = L.layerGroup();
+		var parkings = L.layerGroup();
+		var bus = L.layerGroup();
+
+		var restaurantIcon = L.icon({
+		    iconUrl: '../../img/icons/restaurantIcon.png',
+		    shadowUrl: '../../img/icons/restaurantIcon.png',
+
+		    iconSize:     [40, 40], // size of the icon
+		    shadowSize:   [0, 0], // size of the shadow
+		    iconAnchor:   [22, 94], // point of the icon which will correspond to marker's location
+		    shadowAnchor: [0, 0],  // the same for the shadow
+		    popupAnchor:  [-3, -76] // point from which the popup should open relative to the iconAnchor
+		});
+		var cinemaIcon = L.icon({
+		    iconUrl: '../../img/icons/cinemaIcon.svg',
+		    shadowUrl: '../../img/icons/cinemaIcon.svg',
+
+		    iconSize:     [40, 40], // size of the icon
+		    shadowSize:   [0, 0], // size of the shadow
+		    iconAnchor:   [22, 94], // point of the icon which will correspond to marker's location
+		    shadowAnchor: [0, 0],  // the same for the shadow
+		    popupAnchor:  [-3, -76] // point from which the popup should open relative to the iconAnchor
+		});
+		var bankIcon = L.icon({
+		    iconUrl: '../../img/icons/bankIcon.png',
+		    shadowUrl: '../../img/icons/bankIcon.png',
+
+		    iconSize:     [40, 40], // size of the icon
+		    shadowSize:   [0, 0], // size of the shadow
+		    iconAnchor:   [22, 94], // point of the icon which will correspond to marker's location
+		    shadowAnchor: [0, 0],  // the same for the shadow
+		    popupAnchor:  [-3, -76] // point from which the popup should open relative to the iconAnchor
+		});
+		var barIcon = L.icon({
+		    iconUrl: '../../img/icons/barIcon.png',
+		    shadowUrl: '../../img/icons/barIcon.png',
+
+		    iconSize:     [40, 40], // size of the icon
+		    shadowSize:   [0, 0], // size of the shadow
+		    iconAnchor:   [22, 94], // point of the icon which will correspond to marker's location
+		    shadowAnchor: [0, 0],  // the same for the shadow
+		    popupAnchor:  [-3, -76] // point from which the popup should open relative to the iconAnchor
+		});
+		var bicycleIcon = L.icon({
+		    iconUrl: '../../img/icons/bicycleIcon.png',
+		    shadowUrl: '../../img/icons/bicycleIcon.png',
+
+		    iconSize:     [40, 40], // size of the icon
+		    shadowSize:   [0, 0], // size of the shadow
+		    iconAnchor:   [22, 94], // point of the icon which will correspond to marker's location
+		    shadowAnchor: [0, 0],  // the same for the shadow
+		    popupAnchor:  [-3, -76] // point from which the popup should open relative to the iconAnchor
+		});
+		var busIcon = L.icon({
+		    iconUrl: '../../img/icons/busIcon.svg',
+		    shadowUrl: '../../img/icons/busIcon.svg',
+
+		    iconSize:     [40, 40], // size of the icon
+		    shadowSize:   [0, 0], // size of the shadow
+		    iconAnchor:   [22, 94], // point of the icon which will correspond to marker's location
+		    shadowAnchor: [0, 0],  // the same for the shadow
+		    popupAnchor:  [-3, -76] // point from which the popup should open relative to the iconAnchor
+		});
+		var coffeIcon = L.icon({
+		    iconUrl: '../../img/icons/coffeIcon.png',
+		    shadowUrl: '../../img/icons/coffeIcon.png',
+
+		    iconSize:     [40, 40], // size of the icon
+		    shadowSize:   [0, 0], // size of the shadow
+		    iconAnchor:   [22, 94], // point of the icon which will correspond to marker's location
+		    shadowAnchor: [0, 0],  // the same for the shadow
+		    popupAnchor:  [-3, -76] // point from which the popup should open relative to the iconAnchor
+		});
+		var fastfoodIcon = L.icon({
+		    iconUrl: '../../img/icons/fastfoodIcon.png',
+		    shadowUrl: '../../img/icons/fastfoodIcon.png',
+
+		    iconSize:     [40, 40], // size of the icon
+		    shadowSize:   [0, 0], // size of the shadow
+		    iconAnchor:   [22, 94], // point of the icon which will correspond to marker's location
+		    shadowAnchor: [0, 0],  // the same for the shadow
+		    popupAnchor:  [-3, -76] // point from which the popup should open relative to the iconAnchor
+		});
+		var parkingIcon = L.icon({
+		    iconUrl: '../../img/icons/parkingIcon.png',
+		    shadowUrl: '../../img/icons/parkingIcon.png',
+
+		    iconSize:     [40, 40], // size of the icon
+		    shadowSize:   [0, 0], // size of the shadow
+		    iconAnchor:   [22, 94], // point of the icon which will correspond to marker's location
+		    shadowAnchor: [0, 0],  // the same for the shadow
+		    popupAnchor:  [-3, -76] // point from which the popup should open relative to the iconAnchor
+		});
+		var pharmacyIcon = L.icon({
+		    iconUrl: '../../img/icons/pharmacyIcon.png',
+		    shadowUrl: '../../img/icons/pharmacyIcon.png',
+
+		    iconSize:     [40, 40], // size of the icon
+		    shadowSize:   [0, 0], // size of the shadow
+		    iconAnchor:   [22, 94], // point of the icon which will correspond to marker's location
+		    shadowAnchor: [0, 0],  // the same for the shadow
+		    popupAnchor:  [-3, -76] // point from which the popup should open relative to the iconAnchor
+		});
+		var pubIcon = L.icon({
+		    iconUrl: '../../img/icons/pubIcon.png',
+		    shadowUrl: '../../img/icons/pubIcon.png',
+
+		    iconSize:     [40, 40], // size of the icon
+		    shadowSize:   [0, 0], // size of the shadow
+		    iconAnchor:   [22, 94], // point of the icon which will correspond to marker's location
+		    shadowAnchor: [0, 0],  // the same for the shadow
+		    popupAnchor:  [-3, -76] // point from which the popup should open relative to the iconAnchor
+		});
+		var taxiIcon = L.icon({
+		    iconUrl: '../../img/icons/taxiIcon.png',
+		    shadowUrl: '../../img/icons/taxiIcon.png',
+
+		    iconSize:     [40, 40], // size of the icon
+		    shadowSize:   [0, 0], // size of the shadow
+		    iconAnchor:   [22, 94], // point of the icon which will correspond to marker's location
+		    shadowAnchor: [0, 0],  // the same for the shadow
+		    popupAnchor:  [-3, -76] // point from which the popup should open relative to the iconAnchor
+		});
+		var theatreIcon = L.icon({
+		    iconUrl: '../../img/icons/theatreIcon.png',
+		    shadowUrl: '../../img/icons/theatreIcon.png',
+
+		    iconSize:     [40, 40], // size of the icon
+		    shadowSize:   [0, 0], // size of the shadow
+		    iconAnchor:   [22, 94], // point of the icon which will correspond to marker's location
+		    shadowAnchor: [0, 0],  // the same for the shadow
+		    popupAnchor:  [-3, -76] // point from which the popup should open relative to the iconAnchor
+		});
+		
+		while (i != obj.length) {
+			var marker = L.marker([obj[i].latitude, obj[i].longitude]).addTo(monuments);
+			var customPopUp = "<p><b>" + obj[i].name + "</b> <br />" + obj[i].comment + "<br /> </p>"; 
+			marker.bindPopup(customPopUp);
+			
+			while (j != obj[i].restaurantAround.length) {
+				var markerd = L.marker([obj[i].restaurantAround[j].lat, obj[i].restaurantAround[j].lon], {icon: restaurantIcon}).addTo(restaurantes);
+				var customPopUpd = "<p><b>" + obj[i].restaurantAround[j].tags.name + "</b> </p>"; 
+				markerd.bindPopup(customPopUpd);
+				j++;
+			}
+			j=0;
+			
+			while (j != obj[i].fastFoodAround.length) {
+				var markerd = L.marker([obj[i].fastFoodAround[j].lat, obj[i].fastFoodAround[j].lon], {icon: fastfoodIcon}).addTo(ff);
+				var customPopUpd = "<p><b>" + obj[i].fastFoodAround[j].tags.name + "</b> </p>"; 
+				markerd.bindPopup(customPopUpd);
+				j++;
+			}
+			j=0;
+			
+			while (j != obj[i].pubAround.length) {
+				var markerd = L.marker([obj[i].pubAround[j].lat, obj[i].pubAround[j].lon], {icon: pubIcon}).addTo(pubs);
+				var customPopUpd = "<p><b>" + obj[i].pubAround[j].tags.name + "</b> </p>"; 
+				markerd.bindPopup(customPopUpd);
+				j++;
+			}
+			j=0;
+			
+			while (j != obj[i].cafeAround.length) {
+				var markerd = L.marker([obj[i].cafeAround[j].lat, obj[i].cafeAround[j].lon], {icon: coffeIcon}).addTo(cafes);
+				var customPopUpd = "<p><b>" + obj[i].cafeAround[j].tags.name + "</b> </p>"; 
+				markerd.bindPopup(customPopUpd);
+				j++;
+			}
+			j=0;
+			
+			while (j != obj[i].cinemaAround.length) {
+				var markerd = L.marker([obj[i].cinemaAround[j].lat, obj[i].cinemaAround[j].lon], {icon: cinemaIcon}).addTo(cines);
+				var customPopUpd = "<p><b>" + obj[i].cinemaAround[j].tags.name + "</b> </p>"; 
+				markerd.bindPopup(customPopUpd);
+				j++;
+			}
+			j=0;
+			
+			while (j != obj[i].theatreAround.length) {
+				var markerd = L.marker([obj[i].theatreAround[j].lat, obj[i].theatreAround[j].lon], {icon: theatreIcon}).addTo(teatros);
+				var customPopUpd = "<p><b>" + obj[i].theatreAround[j].tags.name + "</b> </p>"; 
+				markerd.bindPopup(customPopUpd);
+				j++;
+			}
+			j=0;
+			
+			while (j != obj[i].barAround.length) {
+				var markerd = L.marker([obj[i].barAround[j].lat, obj[i].barAround[j].lon], {icon: barIcon}).addTo(bares);
+				var customPopUpd = "<p><b>" + obj[i].barAround[j].tags.name + "</b> </p>"; 
+				markerd.bindPopup(customPopUpd);
+				j++;
+			}
+			j=0;
+			
+			while (j != obj[i].pharmacyAround.length) {
+				var markerd = L.marker([obj[i].pharmacyAround[j].lat, obj[i].pharmacyAround[j].lon], {icon: pharmacyIcon}).addTo(farmacias);
+				var customPopUpd = "<p><b>" + obj[i].pharmacyAround[j].tags.name + "</b> </p>"; 
+				markerd.bindPopup(customPopUpd);
+				j++;
+			}
+			j=0;
+			
+			while (j != obj[i].bankAround.length) {
+				var markerd = L.marker([obj[i].bankAround[j].lat, obj[i].bankAround[j].lon], {icon: bankIcon}).addTo(cajeros);
+				var customPopUpd = "<p><b>" + obj[i].bankAround[j].tags.name + "</b> </p>"; 
+				markerd.bindPopup(customPopUpd);
+				j++;
+			}
+			j=0;
+			
+			while (j != obj[i].bicycleParkingAround.length) {
+				var markerd = L.marker([obj[i].bicycleParkingAround[j].lat, obj[i].bicycleParkingAround[j].lon], {icon: bicycleIcon}).addTo(bicis);
+				var customPopUpd = "<p><b>" + obj[i].bicycleParkingAround[j].tags.name + "</b> </p>"; 
+				markerd.bindPopup(customPopUpd);
+				j++;
+			}
+			j=0;
+			
+			while (j != obj[i].taxiAround.length) {
+				var markerd = L.marker([obj[i].taxiAround[j].lat, obj[i].taxiAround[j].lon], {icon: taxiIcon}).addTo(taxi);
+				var customPopUpd = "<p><b>" + obj[i].taxiAround[j].tags.name + "</b> </p>"; 
+				markerd.bindPopup(customPopUpd);
+				j++;
+			}
+			j=0;
+			
+			while (j != obj[i].parkingAround.length) {
+				var markerd = L.marker([obj[i].parkingAround[j].lat, obj[i].parkingAround[j].lon], {icon: parkingIcon}).addTo(parkings);
+				var customPopUpd = "<p><b>" + obj[i].parkingAround[j].tags.name + "</b> </p>"; 
+				markerd.bindPopup(customPopUpd);
+				j++;
+			}
+			j=0;
+			
+			while (j != obj[i].busStopAround.length) {
+				var markerd = L.marker([obj[i].busStopAround[j].lat, obj[i].busStopAround[j].lon], {icon: busIcon}).addTo(bus);
+				var customPopUpd = "<p><b>" + obj[i].busStopAround[j].tags.name + "</b> </p>"; 
+				markerd.bindPopup(customPopUpd);
+				j++;
+			}
+			j=0;
+			latlongs.push(marker.getLatLng());
+			i++;
+		}
+
+/* 		var polyline = L.polyline(latlongs, {color: 'red'}).addTo(map);
+ */		
+/* 		var grayscale = L.tileLayer(mapboxUrl, {id: 'map', attribution: mapboxAttribution}),
+	    streets   = L.tileLayer(mapboxUrl, {id: 'map', attribution: mapboxAttribution}); */
+	    var osmUrl='http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+		var osmAttrib='Map data � <a href="http://openstreetmap.org">OpenStreetMap</a> contributors';
+		var osm = new L.TileLayer(osmUrl, {minZoom: 1, maxZoom: 30, attribution: osmAttrib});		
+		
+		var mbUrl = 'https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoibHVtb3NwOTUiLCJhIjoiY2pieGtuemQxMm9iODJ3cGNodWlucDl0dCJ9.EOBZav0u_Ltfl6Pd21SWmA';
+
+		var streets = L.tileLayer(mbUrl, {id: 'mapbox.streets',minZoom: 1, maxZoom: 30});
+		var satellite = L.tileLayer(mbUrl, {id: 'mapbox.satellite',minZoom: 1, maxZoom: 30});
+
+		map = new L.Map('map', {
+		    center: [40.4893538, -3.6827461],
+		    zoom: 11,
+		    layers: [osm, monuments]
+		});
+	    
+	 // create the tile layer with correct attribution
+		
+
+		// start the map in South-East England
+/*  		map.addLayer(osm);
+ */		
+		map.on('click', onMapClick);
+
+ 
+ 		var baseMaps = {
+			    "OpenStreetMap - Original": osm,
+			    "Streets":streets,
+			    "Satellite":satellite
+		}; 
+
+		var overlayMaps = {
+			    "Elementos de la ruta": monuments,
+			    "Comida rapida": ff,
+			    "Restaurantes": restaurantes,
+			    "Pubs": pubs,
+			    "Cafeterias": cafes,
+			    "Cines": cines,
+			    "Teatros": teatros,
+			    "Bares": bares,
+			    "Farmacias": farmacias,
+			    "Cajeros": cajeros,
+			    "Aparca-Bicis": bicis,
+			    "Paradas de Taxi": taxi,
+			    "Parkings": parkings,
+			    "Paradas de Bus": bus
+		};
+		
+		L.control.layers(baseMaps, overlayMaps).addTo(map);	
+		return;
+	}
+	
+	function showHide(name) {
+				
+	    var x = document.getElementById(name);
+	    if (x.style.display === "none") {
+	        x.style.display = "block";
+	    } else {
+	        x.style.display = "none";
+	    }
+	    return;
+	}
+	
+	
+	</script>
+</body>
+
+</html>

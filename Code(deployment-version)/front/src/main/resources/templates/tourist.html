@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+<meta charset="utf-8"></meta>
+<meta http-equiv="X-UA-Compatible" content="IE=edge"></meta>
+<!-- Tell the browser to be responsive to screen width -->
+<meta name="viewport" content="width=device-width, initial-scale=1"></meta>
+<meta name="description" content=""></meta>
+<meta name="author" content=""></meta>
+<!-- Favicon icon -->
+<link rel="icon" type="image/png" sizes="16x16" href="../../img/favicon.png"></link>
+<title>Madrid on You</title>
+<!-- Bootstrap Core CSS -->
+<link href="../../plugins/bootstrap/css/bootstrap.min.css" rel="stylesheet"></link>
+<!-- Custom CSS -->
+<link rel="stylesheet" href="../../lib/leaflet/leaflet.css"></link>
+<link rel="stylesheet" href="../../dist/css/timepicker.css"></link>
+
+<!-- page css -->
+<link href="../../css/pages/google-vector-map.css" rel="stylesheet"></link>
+<!-- You can change the theme colors from here -->
+<link href="../../css/colors/default-dark.css" id="theme" rel="stylesheet"></link>
+<!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+<!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+<!--[if lt IE 9]>
+    <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+    <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+<![endif]-->
+<link href="../../css/ticks.css" rel="stylesheet"></link>
+<link href="../../css/style.css" rel="stylesheet"></link>
+
+
+<script src="../../jquery/jquery-1.10.2.js" type="text/javascript"></script>
+<script src="../../bootstrap3/js/bootstrap.js" type="text/javascript"></script>
+<script src="../../js/login-register.js" type="text/javascript"></script>
+<script src="../../lib/leaflet/leaflet.js"></script>
+<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+<script src="../../dist/js/timepicker.js"></script>
+
+<style type="text/css">
+#map {
+	height: 400px;
+}
+</style>
+<style type="text/css">
+.leaflet-control-attribution {
+	display: none;
+}
+</style>
+</head>
+
+<body class="fix-header card-no-border fix-sidebar">
+	<div class="preloader">
+		<div class="loader">
+			<div class="loader__figure"></div>
+			<p class="loader__label">Cargando...</p>
+		</div>
+	</div>
+
+	<div id="main-wrapper">
+
+		<header class="topbar">
+			<nav class="navbar top-navbar navbar-expand-md navbar-light">
+
+				<div class="navbar-header">
+					<a class="navbar-brand" th:href="@{'/users/'+${activeUsername}+'/home'}"> <!-- Logo icon --> <b>
+							<img src="../../img/logo-icon.png" alt="homepage" class="dark-logo"></img>
+					</b> <span> <img src="../../img/logo-text.png" alt="homepage"
+							class="dark-logo"></img>
+					</span>
+					</a>
+				</div>
+				<div class="navbar-collapse">
+
+					<ul class="navbar-nav mr-auto">
+						<li class="nav-item"><a
+							class="nav-link nav-toggler hidden-md-up waves-effect waves-dark"
+							href="javascript:void(0)"><i class="ti-menu"></i></a></li>
+					</ul>
+
+					<ul class="navbar-nav my-lg-0">
+						<li class="nav-item"><a
+							class="nav-link waves-effect waves-dark" th:href="@{'/users/'+${activeUsername}+'/profile'}"><img
+								src="../../img/icons/userIcon.png" alt="user" class="profile-pic" /></a></li>
+					</ul>
+				</div>
+			</nav>
+		</header>
+		<aside class="left-sidebar">
+			<div class="scroll-sidebar">
+				<!-- Sidebar navigation-->
+				<nav class="sidebar-nav">
+					<ul id="sidebarnav">
+						<li><a class="waves-effect waves-dark" th:href="@{'/users/'+${activeUsername}+'/home'}"
+							aria-expanded="false"><i class="mdi mdi-gauge"></i><span
+								class="hide-menu">Actividad Reciente</span></a></li>
+						<li><a class="waves-effect waves-dark" th:href="@{'/users/'+${activeUsername}+'/profile'}"
+							aria-expanded="false"><i class="mdi mdi-account-check"></i><span
+								class="hide-menu">Perfil</span></a></li>
+						<li><a class="waves-effect waves-dark" th:href="@{'/users/'+${activeUsername}+'/routeDefinition'}"
+							aria-expanded="false"><i class="mdi mdi-routes"></i><span
+								class="hide-menu">Generador de rutas</span></a></li>
+						<li><a class="waves-effect waves-dark" th:href="@{'/users/'+${activeUsername}+'/mapStandalone'}"
+							aria-expanded="false"><i class="mdi mdi-earth"></i><span
+								class="hide-menu">Mapa</span></a></li>
+						<li><a class="waves-effect waves-dark" href="../../01Manual_WEB.pdf" target="_blank"
+							aria-expanded="false"><i class="mdi mdi-help-circle"></i><span
+								class="hide-menu">Ayuda</span></a></li>
+						<li><a class="waves-effect waves-dark" href="/"
+							aria-expanded="false"><i class="mdi mdi-close-circle"></i><span
+								class="hide-menu">Salir</span></a></li>
+					</ul>
+				</nav>
+				<!-- End Sidebar navigation -->
+			</div>
+		</aside>
+		<div class="page-wrapper">
+			<div class="container-fluid">
+
+				<div class="row page-titles">
+					<div class="col-md-5 align-self-center">
+						<h3 class="text-themecolor">Rutas turísticas</h3>
+					</div>
+				</div>
+				<div class="row">
+					<form action="#" th:action="@{'/users/' + ${activeUsername} + '/myRoute'}"
+						th:object="${routeDefinition}" method="post">
+						<fieldset>
+							<div class="col-12">
+								<div class="card">
+									<div class="card-body">
+										<h4 class="card-title">
+											<b>Localización</b>
+										</h4>
+										<p>Indica los lugares por los que quieres que pase tu
+											ruta. Puedes elegir una ruta que contemple toda la ciudad, o
+											un distrito que te gustaria visitar.</p>
+										<select th:field="*{district}" class="custom-select sources">
+											<option value="*">Todo Madrid</option>
+											<option value="FUENCARRAL-EL PARDO">Fuencarral - El Pardo</option>
+											<option value="MONCLOA-ARAVACA">Moncloa - Aravaca</option>
+											<option value="TETUAN">Tetuán</option>
+											<option value="HORTALEZA">Hortaleza</option>
+											<option value="CHAMARTIN">Chamartín</option>
+											<option value="CIUDAD LINEAL">Ciudad Lineal</option>
+											<option value="CHAMBERI">Chamberí</option>
+											<option value="SALAMANCA">Barrio de Salamanca</option>
+											<option value="SAN BLAS-CANILLEJAS">San Blas - Canillejas</option>
+											<option value="BARAJAS">Barajas </option>
+											<option value="CENTRO">Centro</option>
+											<option value="RETIRO">Retiro</option>
+											<option value="ARGANZUELA">Arganzuela</option>
+											<option value="MORATALAZ">Moratalaz</option>
+											<option value="VILLAVERDE">Villaverde</option>
+											<option value="USERA">Usera</option>
+											<option value="LATINA">Latina</option>
+											<option value="CARABANCHEL">Carabanchel</option>
+											<option value="VICALVARO">Vicálvaro</option>
+											<option value="PUENTE DE VALLECAS">Puente de Vallecas</option>
+											<option value="VILLA DE VALLECAS">Villa de Vallecas</option>
+
+										</select>
+										<div class="row" style="margin-top: 30px">
+											<div class="col-md-6">
+												<h4 class="card-title">
+													<b>Horario</b>
+												</h4>
+												<p>Si no especificas un horario, se planificará una ruta
+													para todo el dia. En caso de que definas un horario,
+													apareceran lugares que podras visitar en las horas que has
+													indicado.</p>
+												<div class="row">
+													<div class="col-md-4">
+														<h5>Comienzo</h5>
+													</div>
+													<div class="col-md-6">
+														<input type="text" th:field="*{horaIni}"
+															class="form-control" id="timeIni"></input>
+														<script>
+															$("#timeIni")
+																	.timepicker();
+														</script>
+													</div>
+												</div>
+												<div class="row"></div>
+												<div class="row" style="margin-top: 5px">
+													<div class="col-md-4">
+														<h5>Fin</h5>
+													</div>
+													<div class="col-md-6">
+														<input type="text" th:field="*{horaFin}"
+															class="form-control" id="timeFin"></input>
+														<script>
+															$("#timeFin")
+																	.timepicker();
+														</script>
+													</div>
+												</div>
+											</div>
+											<div class="col-md-6">
+												<h4 class="card-title">
+													<b>Tipos de edificios</b>
+												</h4>
+												<p>Puedes elegir el tipo de edificios que contendrá tu
+													ruta. Actualmente tenemos disponibles los siguientes tipos
+													de edificios:</p>
+												<select th:field="*{categoria}"
+													class="custom-select sources">
+													<option value="HistoricBuilding">Monumentos históricos</option>
+													<option value="Museum">Museos</option>
+													<option value="Library">Bibliotecas</option>
+													<option value="ReligiousBuilding">Iglesias católicas</option>
+												</select>
+											</div>
+										</div>
+										<div class="row" style="margin-top: 30px">
+											<div class="col-md-6">
+												<h4 class="card-title">
+													<b>Tamaño de la ruta</b>
+												</h4>
+												<p>Por defecto, las rutas que genera Madrid on You
+													contienen 5 localizaciones. Si quieres definir un numero
+													distinto, puedes hacerlo. Cuanto más grande sea la ruta,
+													más tardaremos en prepararla.</p>
+												<div class="row">
+													<div class="col-md-4">
+														<h5>Numero de monumentos</h5>
+													</div>
+													<div class="col-md-6">
+														<input type="text" value="5" th:field="*{size}"
+															class="form-control" id="numElems"></input>
+													</div>
+												</div>
+											</div>
+											<div class="col-md-6">
+												<h4 class="card-title">
+													<b>Lugares cercanos</b>
+												</h4>
+												<p>Para cada monumento perteneciente a la ruta generada,
+													veras recomendaciones sobre sitios cercanos que puedes
+													visitar. Estos sitios pueden ser restaurantes, bares, pubs,
+													restaurantes de comida rapida, farmacias, cines, y paradas
+													de bus, entre otros.</p>
+											</div>
+										</div>
+										<div class="row" style="margin-top: 30px; text-align: center">
+											<div class="col-md-2">
+												<img src="../../img/hat.png" alt="hat" height="150" width="150"></img>
+											</div>
+											<div class="col-md-10">
+
+												<h4 class="card-title">
+													<b>Especial para estudiantes</b>
+												</h4>
+												<p>Si eres estudiante de algo relacionado con la web
+													semántica y los datos enlazados, ¡estas de suerte!. Madrid
+													on You puede enviar a tu dirección de correo electrónico
+													información sobre cómo hemos generado la ruta (metodologías
+													+ tecnologías implicadas). Puedes indicarnos tu e-mail a
+													continuación y te enviaremos el reporte. ¡Aprovecha esta
+													oportunidad de aprender un poco más!</p>
+												<input type="text" value="5" th:field="*{email}"
+													class="form-control" id="numElems" placeholder="Introduce tu dirección de e-mail"></input>
+											</div>
+										</div>
+										<div class="row" style="margin-top: 30px; text-align: center">
+											<button type="submit" class="btn btn-success btn-block">Generar
+												ruta!</button>
+										</div>
+									</div>
+								</div>
+							</div>
+						</fieldset>
+					</form>
+				</div>
+			</div>
+		</div>
+		<footer class="footer"> © 2018 Madrid on You </footer>
+	</div>
+
+	<script src="../../plugins/jquery/jquery.min.js"></script>
+	<!-- Bootstrap tether Core JavaScript -->
+	<script src="../../plugins/bootstrap/js/popper.min.js"></script>
+	<script src="../../plugins/bootstrap/js/bootstrap.min.js"></script>
+	<!-- slimscrollbar scrollbar JavaScript -->
+	<script src="../../js/perfect-scrollbar.jquery.min.js"></script>
+	<!--Wave Effects -->
+	<script src="../../js/waves.js"></script>
+	<!--Menu sidebar -->
+	<script src="../../js/sidebarmenu.js"></script>
+	<!--Custom JavaScript -->
+	<script src="../../js/custom.min.js"></script>
+</body>
+
+</html>
